@@ -40,7 +40,13 @@ namespace RestaurantRaterAPI.Controllers
         [HttpGet]
         public async Task<IHttpActionResult> GetById(int id)
         {
-            return Ok();
+            Restaurant restaurant = await _context.Restaurants.FindAsync(id);
+            if (restaurant != null)
+            {
+                return Ok(restaurant);
+            }
+
+            return NotFound(); // built in method
         }
 
         // Get All
@@ -52,6 +58,32 @@ namespace RestaurantRaterAPI.Controllers
         }
 
         //-- Update (Put)
+        [HttpPut]
+        public async Task<IHttpActionResult> UpdateRestaurant([FromUri]int id, [FromBody]Restaurant updatedRestaurant) // uri kind of encapsulate urls
+        {
+            if (ModelState.IsValid)
+            {
+
+                // Find and udpate the appropriate restaurant
+                Restaurant restaurant = await _context.Restaurants.FindAsync(id);
+
+                if (restaurant != null)
+                {
+                    // Update the restaurant now that we found it
+                    restaurant.Name = updatedRestaurant.Name;
+                    restaurant.Rating = updatedRestaurant.Rating;
+
+                    await _context.SaveChangesAsync();
+
+                    return Ok("Restaurant has been updated.");
+                }
+                // Didn't find the restaurant
+                return NotFound();
+                
+            }
+            return BadRequest(ModelState); // modelstate tells badrequest what specifically went wrong
+           
+        }
 
         //-- Delete (Delete)
 
